@@ -1,5 +1,7 @@
-from HomeTuner import setup_logging, scanner, init_assets
+from HomeTuner import setup_logging, scanner, init_assets, create_app
 
 setup_logging()
 init_assets()
-scanner.main()
+# scanner.main()
+app = create_app()
+app.run(host='0.0.0.0')

@@ -22,27 +22,27 @@ class AppTest(unittest.TestCase):
 
     def tearDown(self):
         with open(scanner.DATA, 'w') as f:
-            json.dump({'last': '', 'devices': {}}, f)
+            json.dump({'last': '', 'visits': {}}, f)
 
     def test_no_new_device(self):
         scanner.save_newest_device(online_devices=[])
         with open(scanner.DATA) as f:
             after = json.load(f)
-        self.assertEqual(after['devices'], {})
+        self.assertEqual(after['visits'], {})
 
     def test_connected_device(self):
         scanner.save_newest_device(online_devices=[self.A])
         with open(scanner.DATA) as f:
             after = json.load(f)
         self.assertEqual(after['last'], self.A)
-        self.assertEqual(after['devices'].keys(), [self.A])
+        self.assertEqual(list(after['visits'].keys()), [self.A])
 
     def test_disconnected_device(self):
         scanner.save_newest_device(online_devices=[self.A, self.B])
         with open(scanner.DATA, 'r+') as f:
             data = json.load(f)
             # update last seen property of B to be in the distant past. system should consider it as disconnected.
-            data['devices'][self.B]['last_online'] = int(time.time() - scanner.LAST_SEEN_INTERVAL - 100)
+            data['visits'][self.B] = int(time.time() - scanner.LAST_SEEN_INTERVAL - 100)
             data['last'] = self.A
             f.seek(0)
             json.dump(data, f)

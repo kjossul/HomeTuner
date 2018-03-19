@@ -67,3 +67,14 @@ fabric.properties
 venv/
 .directory
 *.log
+*.json
+!/logging.json
+HomeTuner/__init__.pyc
+HomeTuner/__pycache__/
+HomeTuner/assets/
+HomeTuner/scanner.pyc
+tests/__init__.pyc
+tests/__pycache__/
+tests/assets/
+tests/test_scanner.pyc
+/.apikey
