@@ -1,0 +1,32 @@
+{
+  "devices": {
+    "aa:aa:aa:aa:aa": {
+      "name": "a",
+      "songs": {
+        "a": 0,
+        "b": 0
+      }
+    },
+    "bb:bb:bb:bb:bb": {
+      "name": "b",
+      "songs": {
+        "a": 0
+      }
+    }
+  },
+  "songs": {
+    "a": {
+      "progress": 100.0,
+      "savedBy": [
+        "aa:aa:aa:aa:aa",
+        "bb:bb:bb:bb:bb"
+      ]
+    },
+    "b": {
+      "progress": 100.0,
+      "savedBy": [
+        "aa:aa:aa:aa:aa"
+      ]
+    }
+  }
+}

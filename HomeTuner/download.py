@@ -1,5 +1,7 @@
 import json
 import logging
+
+import os
 import youtube_dl
 from flask import Flask, Blueprint, render_template, request, jsonify, abort
 from urllib.parse import unquote_plus
@@ -88,13 +90,23 @@ def put_song(mac, song_id):
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             url = "https://www.youtube.com/watch?v=" + song_id
             ydl.download([url])
-    return jsonify(200)
+    return jsonify({'downloaded':download}), 200, {'ContentType':'application/json'}
 
 
 @downloader.route('/devices/<mac>/songs/<song_id>', methods=['DELETE'])
 def remove_song(mac, song_id):
     mac = unquote_plus(mac)
-    pass
+    with open(SONGS) as f:
+        data = json.load(f)
+    del data['devices'][mac]['songs'][song_id]
+    data['songs'][song_id]['savedBy'] = list(set(data['songs'][song_id]['savedBy']) - {mac})
+    if not data['songs'][song_id]['savedBy']:
+        logger.info("Song {} is not used by any user. Deleting..".format(song_id))
+        del data['songs'][song_id]
+        os.remove(os.path.join(SONGS_DIR, song_id + ".mp3"))
+    with open(SONGS, 'w') as f:
+        json.dump(data, f)
+    return "OK"
 
 
 def manage_download(info):

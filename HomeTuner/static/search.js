@@ -26,9 +26,16 @@ function createButton(col, isSaved) {
         button.insertAdjacentHTML("beforeend", 'Add <span class="glyphicon glyphicon-plus"></span>');
     } else {
         button.setAttribute('class', 'btn btn-danger center-block');
-        button.insertAdjacentHTML("beforeend", 'Add <span class="glyphicon glyphicon-minus"></span>');
+        button.insertAdjacentHTML("beforeend", 'Remove <span class="glyphicon glyphicon-minus"></span>');
     }
     return button;
+}
+
+function invertButton(button, mac, videoId, isSaved, row, progressBar, loadingText) {
+    buttonDiv = button.parentElement;
+    var newButton = createButton(buttonDiv, !isSaved);
+    buttonDiv.removeChild(button);
+    addButtonListener(newButton, mac, videoId, !isSaved, row, progressBar, loadingText);
 }
 
 function addButtonListener(button, mac, videoId, isSaved, row, progressBar, loadingText) {
@@ -55,7 +62,7 @@ function addButtonListener(button, mac, videoId, isSaved, row, progressBar, load
                         loadingText.innerHTML += '.';
                     }
                     progressBar.innerHTML = progress + "%";
-                    progressBar.style.width = progress + 5 + "%";  // don't know why bar won't fill at 100%..
+                    progressBar.style.width = progress + "%";  // don't know why bar won't fill at 100%..
                     if (progress === 100) {
                         clearInterval(t);
                         loadingText.innerHTML = "Success!";
@@ -63,13 +70,16 @@ function addButtonListener(button, mac, videoId, isSaved, row, progressBar, load
                         setTimeout(function () {
                             row.style.display = "none";
                         }, 2000);
+                        invertButton(button, mac, videoId, isSaved, row, progressBar, loadingText);
                     }
                 };
                 progressRequest.open("GET", progressUrl);
                 progressRequest.send();
             }, UPDATE_INTERVAL);
         } else {
-            request.onload = onRemove;
+            request.onload = function () {
+                invertButton(button, mac, videoId, isSaved, row, progressBar, loadingText);
+            };
             request.open("DELETE", url);
         }
         request.send();

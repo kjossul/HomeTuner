@@ -25,23 +25,36 @@ def save_newest_device(online_devices=None):
     """
     if online_devices is None:
         online_devices = get_mac_addresses()
-    with open(DEVICES) as f:
-        data = json.load(f)
-        last_seen = set(
-            [device for device, visit in data['visits'].items() if visit + LAST_SEEN_INTERVAL > time.time()])
-        diff = set(online_devices) - last_seen
-        try:
-            data['last'] = diff.pop()
-            logger.info("New device found! Mac address: {}".format(data['last']))
-        except KeyError:
-            pass
-    with open(DEVICES, 'w') as f:
-        for device in online_devices:
-            data['visits'][device] = int(time.time())
-        json.dump(data, f)
+    try:
+        with open(SONGS) as f:
+            data = json.load(f)
+        diff = set(online_devices) - set(data['devices'].keys())
+        if diff:
+            logger.info("Adding devices to songs file..")
+            for device in diff:
+                data['devices'][device] = {'name': device, 'songs': {}}
+            with open(SONGS, 'w') as f:
+                json.dump(data, f)
+        with open(DEVICES) as f:
+            data = json.load(f)
+            last_seen = set(
+                [device for device, visit in data['visits'].items() if visit + LAST_SEEN_INTERVAL > time.time()])
+            diff = set(online_devices) - last_seen
+            try:
+                data['last'] = diff.pop()
+                logger.info("New device found! Mac address: {}".format(data['last']))
+            except KeyError:
+                pass
+        with open(DEVICES, 'w') as f:
+            for device in online_devices:
+                data['visits'][device] = int(time.time())
+            json.dump(data, f)
+    except json.JSONDecodeError:
+        pass
 
 
 def main():
+    logger.info("Launching scanner. Set to perform arp-scans every {} second(s)".format(SLEEP_SECONDS))
     while True:
         save_newest_device()
         time.sleep(SLEEP_SECONDS)

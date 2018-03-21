@@ -79,3 +79,4 @@ tests/assets/
 tests/test_scanner.pyc
 /.apikey
 !/tests/devices.json
+!/tests/songs.json
