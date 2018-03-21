@@ -2,23 +2,24 @@
 {% block title %}HomeTuner{% endblock %}
 
 {% block content %}
-    <h1>Hello, {{ mac }}</h1>
-    <div class="col-lg-6 row center-block" style="float: none">
-        <form method="post">
-            <div class="input-group">
-                <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
-                <span class="input-group-btn">
+    <div class="container-fluid">
+        <div class="col-lg-6 row center-block" style="float: none">
+            <form method="post">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
+                    <span class="input-group-btn">
             <button class="btn btn-default" type="submit" id="searchBtn">Search YouTube</button>
           </span>
-            </div><!-- /input-group -->
-        </form>
-    </div><!-- /.col-lg-6 -->
-    <div class="row center-block" style="float: none; width: 80%; margin-top: 25px">
-        <ul class="media-list" id="search-result"></ul>
+                </div><!-- /input-group -->
+            </form>
+        </div><!-- /.col-lg-6 -->
+        <div class="row center-block" style="float: none; width: 80%; margin-top: 25px">
+            <ul class="media-list" id="search-result"></ul>
+        </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
-    {{super()}}
-    <script src="{{url_for('static', filename='search.js')}}"></script>
+    {{ super() }}
+    <script src="{{ url_for('static', filename='search.js') }}"></script>
 {% endblock %}

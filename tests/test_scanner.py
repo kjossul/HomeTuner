@@ -5,7 +5,7 @@ import time
 
 from HomeTuner import scanner, setup_logging, init_assets
 
-scanner.DATA = "tests/assets/data.json"
+scanner.DATA = "tests/data.json"
 
 
 class AppTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class AppTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         setup_logging(tofile=False)
-        init_assets(folder="tests/assets/", overwrite=True)
+        init_assets(folder="tests/", overwrite=True)
 
     def setUp(self):
         pass

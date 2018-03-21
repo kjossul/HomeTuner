@@ -1,7 +1,6 @@
-import json
 import logging
 
-from flask import Flask, Blueprint, render_template, request, jsonify, Response
+from flask import Flask, Blueprint, render_template, request, jsonify
 from googleapiclient.discovery import build
 from HomeTuner.scanner import get_mac_addresses
 

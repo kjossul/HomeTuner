@@ -3,12 +3,8 @@ import logging
 import time
 import re
 import subprocess
+from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS, DATA
 
-INTERFACE = "eno1"
-LAST_SEEN_INTERVAL = 300  # device is considered to online if last connection was at most this amount of seconds ago
-SLEEP_SECONDS = 1
-ASSETS_FOLDER = "HomeTuner/assets/"
-DATA = ASSETS_FOLDER + "data.json"
 logger = logging.getLogger(__name__)
 
 
