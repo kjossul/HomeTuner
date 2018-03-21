@@ -1,4 +1,4 @@
-from HomeTuner import setup_logging, scanner, init_assets, create_app
+from HomeTuner import setup_logging, scan, init_assets, create_app
 
 setup_logging()
 init_assets()

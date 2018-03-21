@@ -5,7 +5,8 @@ import os
 
 from flask import Flask
 from flask_bootstrap import Bootstrap
-from HomeTuner.downloader import downloader
+from HomeTuner.download import downloader
+from config import DIRECTORY, DEVICES, SONGS, SONGS_DIR, DUMMY_MAC
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,19 @@ def setup_logging(path='logging.json', default_level=logging.INFO, env_key='LOG_
         logging.basicConfig(level=default_level)
 
 
-def init_assets(folder="HomeTuner/", overwrite=False):
+def init_assets():
     data = {'visits': {}, 'last': ""}
-    if not overwrite:
+    if os.path.exists(SONGS_DIR):
         return
-    with open(folder+"data.json", 'w+') as f:
+    else:
+        os.makedirs(SONGS_DIR)
+    with open(DEVICES, 'w+') as f:
         logger.info("Generating data file")
         json.dump(data, f)
+    with open(SONGS, 'w+') as f:
+        logger.info("Generating song info file")
+        json.dump({'songs': {}, 'devices': {DUMMY_MAC: {"name": "foo", "songs": {}}}}, f)
+
 
 
 def create_app(config='config'):

@@ -3,7 +3,7 @@ import logging
 import time
 import re
 import subprocess
-from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS, DATA
+from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS, DEVICES, SONGS
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ def save_newest_device(online_devices=None):
     """
     if online_devices is None:
         online_devices = get_mac_addresses()
-    with open(DATA) as f:
+    with open(DEVICES) as f:
         data = json.load(f)
         last_seen = set(
             [device for device, visit in data['visits'].items() if visit + LAST_SEEN_INTERVAL > time.time()])
@@ -35,7 +35,7 @@ def save_newest_device(online_devices=None):
             logger.info("New device found! Mac address: {}".format(data['last']))
         except KeyError:
             pass
-    with open(DATA, 'w') as f:
+    with open(DEVICES, 'w') as f:
         for device in online_devices:
             data['visits'][device] = int(time.time())
         json.dump(data, f)

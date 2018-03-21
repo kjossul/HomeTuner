@@ -2,8 +2,9 @@
 {% block title %}HomeTuner{% endblock %}
 
 {% block content %}
-    <div class="container-fluid">
-        <div class="col-lg-6 row center-block" style="float: none">
+    Hello, {{ name }}!
+    <div class="container">
+        <div class="col-xs-11 col-md-8 center-block" style="float: none">
             <form method="post">
                 <div class="input-group">
                     <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
@@ -13,9 +14,7 @@
                 </div><!-- /input-group -->
             </form>
         </div><!-- /.col-lg-6 -->
-        <div class="row center-block" style="float: none; width: 80%; margin-top: 25px">
-            <ul class="media-list" id="search-result"></ul>
-        </div>
+        <div class="row center-block" style="float: none; margin-top: 25px" id="search-result"></div>
     </div>
 {% endblock %}
 
