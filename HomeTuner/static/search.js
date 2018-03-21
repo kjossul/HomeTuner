@@ -1,3 +1,109 @@
+function addRow(container, alignCenter = true) {
+    var row = document.createElement('div');
+    row.setAttribute('class', 'row');
+    if (alignCenter) {
+        row.setAttribute("style", "margin-top: 20px; display: flex;align-items: center");
+    } else {
+        row.setAttribute("style", "margin-top: 20px;");
+    }
+    container.appendChild(row);
+    return row;
+}
+
+function addCol(row, xs, md) {
+    var col = document.createElement('div');
+    col.setAttribute('class', 'col-xs-' + xs + ' col-md-' + md);
+    row.appendChild(col);
+    return col;
+}
+
+function createButton(col, isSaved) {
+    var button = document.createElement('button');
+    col.appendChild(button);
+    button.type = "submit";
+    if (!isSaved) {
+        button.setAttribute('class', 'btn btn-success center-block');
+        button.insertAdjacentHTML("beforeend", 'Add <span class="glyphicon glyphicon-plus"></span>');
+    } else {
+        button.setAttribute('class', 'btn btn-danger center-block');
+        button.insertAdjacentHTML("beforeend", 'Add <span class="glyphicon glyphicon-minus"></span>');
+    }
+    return button;
+}
+
+function addButtonListener(button, mac, videoId, isSaved, row, progressBar, loadingText) {
+    button.addEventListener("click", function (e) {
+        var request = new XMLHttpRequest();
+        var url = "/devices/" + encodeURIComponent(mac) + "/songs/" + encodeURIComponent(videoId);
+        if (!isSaved) {
+            request.onload = function () {
+            };
+            request.open("PUT", url);
+            /* Progress bar update */
+            const UPDATE_INTERVAL = 333;
+            row.style.display = "block";
+            var t = setInterval(function () {
+                var progressRequest = new XMLHttpRequest();
+                var progressUrl = "/songs/" + encodeURIComponent(videoId);
+                progressRequest.onload = function () {
+                    console.log(progressRequest.responseText);
+                    var response = JSON.parse(progressRequest.responseText);
+                    var progress = parseInt(response.progress, loadingText);
+                    if (loadingText.innerHTML.length === 10) {
+                        loadingText.innerHTML = "Loading";
+                    } else {
+                        loadingText.innerHTML += '.';
+                    }
+                    progressBar.innerHTML = progress + "%";
+                    progressBar.style.width = progress + 5 + "%";  // don't know why bar won't fill at 100%..
+                    if (progress === 100) {
+                        clearInterval(t);
+                        loadingText.innerHTML = "Success!";
+                        progressBar.classList.remove("active");
+                        setTimeout(function () {
+                            row.style.display = "none";
+                        }, 2000);
+                    }
+                };
+                progressRequest.open("GET", progressUrl);
+                progressRequest.send();
+            }, UPDATE_INTERVAL);
+        } else {
+            request.onload = onRemove;
+            request.open("DELETE", url);
+        }
+        request.send();
+    });
+}
+
+function createRow(container, videoId, isSaved, mac) {
+    var row = addRow(container);
+    addCol(row, 1, 2);
+    var videoCol = addCol(row, 8, 5);
+    videoCol.insertAdjacentHTML("beforeend", `<div class="embed-responsive embed-responsive-16by9">
+                                                <iframe class="embed-responsive-item" src="//www.youtube.com/embed/` + videoId + `?rel=0"></iframe>
+                                              </div>`);
+    var btnCol = addCol(row, 2, 3);
+    var button = createButton(btnCol, isSaved);
+    var progressBarRow = addRow(container, false);
+    addCol(progressBarRow, 1, 2);
+    var loadingText = addCol(progressBarRow, 4, 1);
+    var progressBarCol = addCol(progressBarRow, 6, 7);
+    addCol(progressBarRow, 1, 2);
+    loadingText.innerHTML = "Loading";
+    var progressDiv = document.createElement('div');
+    progressBarCol.appendChild(progressDiv);
+    progressDiv.className = "progress";
+    var progressBar = document.createElement('div');
+    progressDiv.appendChild(progressBar);
+    progressBar.className = "progress-bar progress-bar-striped progress-bar-success active";
+    progressBar.setAttribute('style', "width: 0; min-width: 2em");
+    progressBar.innerHTML = "0%";
+    progressBarRow.style.display = "none";
+    addButtonListener(button, mac, videoId, isSaved, progressBarRow, progressBar, loadingText);
+    addCol(row, 1, 2);
+}
+
 addEventListener("DOMContentLoaded", function () {
     var button = document.getElementById("searchBtn");
     button.addEventListener("click", function (e) {
@@ -8,51 +114,10 @@ addEventListener("DOMContentLoaded", function () {
             var response = JSON.parse(request.responseText);
             var videos = response.videos;
             var mac = response.mac;
-            var ul = document.getElementById('search-result');
-            ul.innerHTML = '';
+            var div = document.getElementById('search-result');
+            div.innerHTML = '';
             for (var i = 0; i < videos.length; i++) {
-                if (!videos[i].saved) {
-                    var button = `<button class="btn btn-success center-block" type="submit" id="` + videos[i].id + `">
-                                    Add <span class="glyphicon glyphicon-plus"></span>
-                                    </button>`;
-                } else {
-                    var button = `<button class="btn btn-danger center-block" type="submit" id="` + videos[i].id + `">
-                                    Remove <span class="glyphicon glyphicon-minus"></span>
-                                    </button>`;
-                }
-                var html = `<div class="row" style="margin-top: 20px; display: flex;align-items: center">
-                                <div class="col-xs-1 col-md-2"></div>
-                                <div class="col-xs-8 col-md-5">
-                                    <div class="embed-responsive embed-responsive-16by9">
-                                        <iframe class="embed-responsive-item" src="//www.youtube.com/embed/` + videos[i].id + `?rel=0"></iframe>
-                                    </div>
-                                </div>
-                                <div class="col-xs-2 col-md-3">` + button + `</div>
-                                <div class="col-xs-1 col-md-2"></div>
-                            </div>`;
-                ul.insertAdjacentHTML("beforeend", html);
-            }
-            var addButtons = document.getElementsByClassName('btn-success');
-            for (var i = 0; i < addButtons.length; i++) {
-                addButtons[i].addEventListener("click", function (e) {
-                    var addSongRequest = new XMLHttpRequest();
-                    addSongRequest.onload = function () {
-                    };
-                    var url = "/devices/" + encodeURIComponent(mac) + "/songs/" + encodeURIComponent(this.id);
-                    addSongRequest.open("PUT", url);
-                    addSongRequest.send();
-                });
-            }
-            var removeButtons = document.getElementsByClassName('btn-danger');
-            for (var i = 0; i < removeButtons.length; i++) {
-                removeButtons[i].addEventListener("click", function (e) {
-                    var removeSongRequest = new XMLHttpRequest();
-                    removeSongRequest.onload = function () {
-                    };
-                    var url = "/devices/" + encodeURIComponent(mac) + "/songs/" + encodeURIComponent(this.id);
-                    removeSongRequest.open("DELETE", url);
-                    removeSongRequest.send();
-                });
+                createRow(div, videos[i].id, videos[i].saved, mac)
             }
         };
         request.open("GET", "/search?k=" + encodeURIComponent(key), true);

@@ -1,7 +1,7 @@
 import json
 import logging
 import youtube_dl
-from flask import Flask, Blueprint, render_template, request, jsonify
+from flask import Flask, Blueprint, render_template, request, jsonify, abort
 from urllib.parse import unquote_plus
 from googleapiclient.discovery import build
 from HomeTuner.scan import get_mac_addresses
@@ -45,7 +45,12 @@ def search():
 
 @downloader.route('/songs/<song_id>')
 def get_song(song_id):
-    pass
+    with open(SONGS) as f:
+        songs = json.load(f)
+    try:
+        return jsonify({'progress': songs['songs'][song_id]['progress']})
+    except KeyError:
+        return jsonify({'progress': 0})
 
 
 @downloader.route('/devices/<mac>/songs/', methods=['GET'])
