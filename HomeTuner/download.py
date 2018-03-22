@@ -78,7 +78,7 @@ def put_song(mac, song_id):
         songs = json.load(f)
     songs['devices'][mac]['songs'][song_id] = 0  # initially sets song start time to 0
     download = True
-    if song_id in songs['songs']:
+    if song_id in songs['songs'] and songs['songs'][song_id]['progress'] == 100:
         logger.info("Song already downloaded. Adding to user rotation..")
         songs['songs'][song_id]['savedBy'].append(mac)
         download = False
@@ -100,13 +100,14 @@ def remove_song(mac, song_id):
         data = json.load(f)
     del data['devices'][mac]['songs'][song_id]
     data['songs'][song_id]['savedBy'] = list(set(data['songs'][song_id]['savedBy']) - {mac})
-    if not data['songs'][song_id]['savedBy']:
+    residual = data['songs'][song_id]['savedBy']
+    if not residual:
         logger.info("Song {} is not used by any user. Deleting..".format(song_id))
         del data['songs'][song_id]
         os.remove(os.path.join(SONGS_DIR, song_id + ".mp3"))
     with open(SONGS, 'w') as f:
         json.dump(data, f)
-    return "OK"
+    return jsonify({'removedFromDisk': not residual}), 200, {'ContentType':'application/json'}
 
 
 def manage_download(info):
@@ -114,15 +115,18 @@ def manage_download(info):
         songs = json.load(f)
     if info['status'] == 'error':
         logger.info("Error downloading: {}".format(info))
+        # todo remove the song from info file
     else:
         filename = info['filename']
         id = filename[len(SONGS_DIR) + 1:filename.find('.')]
         try:
-            total = info.get('total_bytes', info['total_bytes_estimate'])
+            if 'total_bytes' in info:
+                total = info['total_bytes']
+            else:
+                total = info['total_bytes_estimate']
             songs['songs'][id]['progress'] = info['downloaded_bytes'] / total * 100
         except (TypeError, KeyError):  # total_bytes not available
             songs['songs'][id]['progress'] = 100 if info['status'] == 'finished' else 0
-        logger.info("Download progress: {}%".format(songs['songs'][id]['progress']))
         with open(SONGS, 'w') as f:
             json.dump(songs, f)
 

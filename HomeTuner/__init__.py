@@ -7,6 +7,7 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from HomeTuner.download import downloader
 from config import DIRECTORY, DEVICES, SONGS, SONGS_DIR, DUMMY_MAC
+from HomeTuner.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,4 +51,5 @@ def create_app(config='config'):
     app.config.from_object(config)
     Bootstrap(app)
     app.register_blueprint(downloader)
+    app.register_blueprint(settings)
     return app

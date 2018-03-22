@@ -1,21 +1,17 @@
-{% extends "bootstrap/base.html" %}
-{% block title %}HomeTuner{% endblock %}
+{% extends "base.html" %}
 
-{% block content %}
-    Hello, {{ name }}!
-    <div class="container">
-        <div class="col-xs-11 col-md-8 center-block" style="float: none">
-            <form method="post">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
-                    <span class="input-group-btn">
-            <button class="btn btn-default" type="submit" id="searchBtn">Search YouTube</button>
-          </span>
-                </div><!-- /input-group -->
-            </form>
-        </div><!-- /.col-lg-6 -->
-        <div class="row center-block" style="float: none; margin-top: 25px" id="search-result"></div>
-    </div>
+{% block center %}
+    <div class="col-xs-11 col-md-8 center-block" style="float: none">
+        <form method="post">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="searchBtn">Search YouTube</button>
+                </span>
+            </div><!-- /input-group -->
+        </form>
+    </div><!-- /.col-lg-6 -->
+    <div class="row center-block" style="float: none; margin-top: 25px" id="search-result"></div>
 {% endblock %}
 
 {% block scripts %}

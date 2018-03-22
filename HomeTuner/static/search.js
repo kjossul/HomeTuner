@@ -53,7 +53,6 @@ function addButtonListener(button, mac, videoId, isSaved, row, progressBar, load
                 var progressRequest = new XMLHttpRequest();
                 var progressUrl = "/songs/" + encodeURIComponent(videoId);
                 progressRequest.onload = function () {
-                    console.log(progressRequest.responseText);
                     var response = JSON.parse(progressRequest.responseText);
                     var progress = parseInt(response.progress, loadingText);
                     if (loadingText.innerHTML.length === 10) {
