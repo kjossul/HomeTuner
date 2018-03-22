@@ -118,8 +118,9 @@ def manage_download(info):
         filename = info['filename']
         id = filename[len(SONGS_DIR) + 1:filename.find('.')]
         try:
-            songs['songs'][id]['progress'] = info['downloaded_bytes'] / info['total_bytes'] * 100
-        except TypeError:  # total_bytes not available
+            total = info.get('total_bytes', info['total_bytes_estimate'])
+            songs['songs'][id]['progress'] = info['downloaded_bytes'] / total * 100
+        except (TypeError, KeyError):  # total_bytes not available
             songs['songs'][id]['progress'] = 100 if info['status'] == 'finished' else 0
         logger.info("Download progress: {}%".format(songs['songs'][id]['progress']))
         with open(SONGS, 'w') as f:

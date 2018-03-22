@@ -47,7 +47,7 @@ function addButtonListener(button, mac, videoId, isSaved, row, progressBar, load
             };
             request.open("PUT", url);
             /* Progress bar update */
-            const UPDATE_INTERVAL = 333;
+            const UPDATE_INTERVAL = 666;
             row.style.display = "block";
             var t = setInterval(function () {
                 var progressRequest = new XMLHttpRequest();
