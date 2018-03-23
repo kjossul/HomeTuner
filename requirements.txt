@@ -1,4 +1,5 @@
 flask
 flask-bootstrap
 google-api-python-client
+pygame
 youtube-dl
