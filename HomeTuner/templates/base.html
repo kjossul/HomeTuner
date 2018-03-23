@@ -13,19 +13,23 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/"><img src="/static/images/logo_blue_cyan.png" height="20"
-                                                      width="20"></a>
+                <a class="navbar-brand" href="/"><img src="/static/images/logo_blue_cyan.png" height="20" width="20"></a>
+                {% if name.count(':') > 4 %}
+                    <p class="navbar-right navbar-text"><u><a href="/settings">Set your name here!</a></u></p>
+                {% else %}
+                    <p class="navbar-right navbar-text">Hello, {{ name }}!</p>
+                {% endif %}
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
-                    <li{%- if request.path == "/" %} class="active"{% endif %}>
+                    <li{% if request.path == "/" %} class="active"{% endif %}>
                         <a href="/" class="btn">
                             <span class="glyphicon glyphicon-search"></span> Search
                         </a>
                     </li>
-                    <li{%- if request.path == "/settings" %} class="active"{% endif %}>
+                    <li{% if request.path == "/settings" %} class="active"{% endif %}>
                         <a href="/settings" class="btn">
                             <span class="glyphicon glyphicon-wrench"></span> Settings
                         </a>

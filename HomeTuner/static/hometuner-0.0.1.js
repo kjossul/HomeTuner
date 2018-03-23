@@ -85,6 +85,12 @@ function addButtonListener(button, mac, videoId, isSaved, row, progressBar, load
     });
 }
 
+function updateBarRow(){
+    /*
+    * <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="20" data-slider-step="1" data-slider-value="14"/>
+    * */
+}
+
 function createRow(container, videoId, isSaved, mac) {
     var row = addRow(container);
     addCol(row, 1, 2);
@@ -94,12 +100,12 @@ function createRow(container, videoId, isSaved, mac) {
                                               </div>`);
     var btnCol = addCol(row, 2, 3);
     var button = createButton(btnCol, isSaved);
-    var progressBarRow = addRow(container, false);
-    addCol(progressBarRow, 1, 2);
-    var loadingText = addCol(progressBarRow, 4, 1);
-    var progressBarCol = addCol(progressBarRow, 6, 7);
-    addCol(progressBarRow, 1, 2);
-    loadingText.innerHTML = "Loading";
+    var barRow = addRow(container, false);
+    addCol(barRow, 1, 2);
+    var barRowText = addCol(barRow, 4, 1);
+    var progressBarCol = addCol(barRow, 6, 7);
+    addCol(barRow, 1, 2);
+    barRowText.innerHTML = "Loading";
     var progressDiv = document.createElement('div');
     progressBarCol.appendChild(progressDiv);
     progressDiv.className = "progress";
@@ -108,28 +114,48 @@ function createRow(container, videoId, isSaved, mac) {
     progressBar.className = "progress-bar progress-bar-striped progress-bar-success active";
     progressBar.setAttribute('style', "width: 0; min-width: 2em");
     progressBar.innerHTML = "0%";
-    progressBarRow.style.display = "none";
-    addButtonListener(button, mac, videoId, isSaved, progressBarRow, progressBar, loadingText);
+    barRow.style.display = "none";
+    addButtonListener(button, mac, videoId, isSaved, barRow, progressBar, barRowText);
     addCol(row, 1, 2);
 }
 
-addEventListener("DOMContentLoaded", function () {
+function makeVideoRequest() {
+    var request = new XMLHttpRequest();
+    request.onload = function () {
+        var response = JSON.parse(request.responseText);
+        var videos = response.videos;
+        var mac = response.mac;
+        var div = document.getElementById('search-result');
+        div.innerHTML = '';
+        for (var i = 0; i < videos.length; i++) {
+            createRow(div, videos[i].id, videos[i].saved, mac)
+        }
+    };
+    return request;
+}
+
+function requestVideoSearch() {
     var button = document.getElementById("searchBtn");
     button.addEventListener("click", function (e) {
         e.preventDefault();
         var key = document.getElementById("searchKey").value;
-        var request = new XMLHttpRequest();
-        request.onload = function () {
-            var response = JSON.parse(request.responseText);
-            var videos = response.videos;
-            var mac = response.mac;
-            var div = document.getElementById('search-result');
-            div.innerHTML = '';
-            for (var i = 0; i < videos.length; i++) {
-                createRow(div, videos[i].id, videos[i].saved, mac)
-            }
-        };
+        var request = makeVideoRequest();
         request.open("GET", "/search?k=" + encodeURIComponent(key), true);
         request.send();
     });
+}
+
+function requestUserVideo() {
+    var request = makeVideoRequest();
+    request.open("GET", "/search", true);
+    request.send();
+}
+
+addEventListener("DOMContentLoaded", function () {
+    var isSettings = window.location.pathname.includes('settings');
+    if (isSettings) {
+        requestUserVideo();
+    } else {
+        requestVideoSearch();
+    }
 }, true);

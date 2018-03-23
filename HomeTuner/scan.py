@@ -32,7 +32,7 @@ def save_newest_device(online_devices=None):
         if diff:
             logger.info("Adding devices to songs file..")
             for device in diff:
-                data['devices'][device] = {'name': device, 'songs': {}}
+                data['devices'][device] = {'name': device, 'songs': {}, 'playingOrder': 'random'}
             with open(SONGS, 'w') as f:
                 json.dump(data, f)
         with open(DEVICES) as f:

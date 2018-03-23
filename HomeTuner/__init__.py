@@ -42,7 +42,7 @@ def init_assets():
         json.dump(data, f)
     with open(SONGS, 'w+') as f:
         logger.info("Generating song info file")
-        json.dump({'songs': {}, 'devices': {DUMMY_MAC: {"name": "foo", "songs": {}}}}, f)
+        json.dump({'songs': {}, 'devices': {DUMMY_MAC: {"name": "admin", "songs": {}, "playingOrder": "random"}}}, f)
 
 
 

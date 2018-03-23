@@ -2,6 +2,8 @@ import json
 import logging
 
 import os
+from re import findall
+
 import youtube_dl
 from flask import Flask, Blueprint, render_template, request, jsonify, abort
 from urllib.parse import unquote_plus
@@ -17,10 +19,7 @@ downloader = Blueprint('downloader', __name__)
 
 @downloader.route('/')
 def home():
-    with open(SONGS) as f:
-        data = json.load(f)
-    mac = get_guest_mac()
-    return render_template('home.html', name=data['devices'][mac]['name'])
+    return render_template('home.html', name=get_guest_name())
 
 
 def get_guest_mac():
@@ -33,10 +32,14 @@ def get_guest_mac():
 
 @downloader.route('/search')
 def search():
-    videos = youtube_search(request.args['k'])
     mac = get_guest_mac()
     with open(SONGS) as f:
         data = json.load(f)
+        if 'k' in request.args:
+            videos = youtube_search(request.args['k'])
+        else:
+            videos = [{'id': song_id} for song_id in data['devices'][mac]['songs']]
+            logger.info(videos, data['devices'][mac])
         for vid in videos:
             try:
                 vid['saved'] = vid['id'] in data['devices'][mac]['songs']
@@ -90,7 +93,7 @@ def put_song(mac, song_id):
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             url = "https://www.youtube.com/watch?v=" + song_id
             ydl.download([url])
-    return jsonify({'downloaded':download}), 200, {'ContentType':'application/json'}
+    return jsonify({'downloaded': download}), 200, {'ContentType': 'application/json'}
 
 
 @downloader.route('/devices/<mac>/songs/<song_id>', methods=['DELETE'])
@@ -107,7 +110,7 @@ def remove_song(mac, song_id):
         os.remove(os.path.join(SONGS_DIR, song_id + ".mp3"))
     with open(SONGS, 'w') as f:
         json.dump(data, f)
-    return jsonify({'removedFromDisk': not residual}), 200, {'ContentType':'application/json'}
+    return jsonify({'removedFromDisk': not residual}), 200, {'ContentType': 'application/json'}
 
 
 def manage_download(info):
@@ -141,10 +144,52 @@ def youtube_search(keyword):
     youtube = build('youtube', 'v3', developerKey=get_api_key(), cache_discovery=False)
     search_response = youtube.search().list(
         q=keyword,
-        part='id,snippet',
-        maxResults=6,
+        part='id',
+        maxResults=5,
         type='video'
     ).execute()
-    return [{'thumbnail': result['snippet']['thumbnails']['default']['url'],
-             'id': result['id']['videoId'],
-             'title': result['snippet']['title']} for result in search_response.get('items', [])]
+    search_response = youtube.videos().list(
+        id=','.join(result['id']['videoId'] for result in search_response.get('items', [])),
+        part='contentDetails'
+    ).execute()
+    return [{'id': result['id'],
+             'duration': iso8601_duration_as_seconds(result['contentDetails']['duration'])}
+            for result in search_response.get('items', [])]
+
+
+def get_guest_name():
+    mac = get_guest_mac()
+    with open(SONGS) as f:
+        data = json.load(f)
+        return data['devices'][mac]['name']
+
+
+def iso8601_duration_as_seconds(d):
+    if d[0] != 'P':
+        raise ValueError('Not an ISO 8601 Duration string')
+    seconds = 0
+    # split by the 'T'
+    for i, item in enumerate(d.split('T')):
+        for number, unit in findall('(?P<number>\d+)(?P<period>S|M|H|D|W|Y)', item):
+            # print '%s -> %s %s' % (d, number, unit )
+            number = int(number)
+            this = 0
+            if unit == 'Y':
+                this = number * 31557600  # 365.25
+            elif unit == 'W':
+                this = number * 604800
+            elif unit == 'D':
+                this = number * 86400
+            elif unit == 'H':
+                this = number * 3600
+            elif unit == 'M':
+                # ambiguity ellivated with index i
+                if i == 0:
+                    this = number * 2678400  # assume 30 days
+                    # print "MONTH!"
+                else:
+                    this = number * 60
+            elif unit == 'S':
+                this = number
+            seconds = seconds + this
+    return seconds
