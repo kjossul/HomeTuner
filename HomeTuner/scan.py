@@ -35,20 +35,21 @@ def save_newest_device(online_devices=None):
                 data['devices'][device] = {'name': device, 'songs': {}, 'playingOrder': 'random'}
             with open(SONGS, 'w') as f:
                 json.dump(data, f)
-        with open(DEVICES) as f:
+        with open(DEVICES, 'r+') as f:
             data = json.load(f)
             last_seen = set(
                 [device for device, visit in data['visits'].items() if visit + LAST_SEEN_INTERVAL > time.time()])
             diff = set(online_devices) - last_seen
             try:
                 data['last'] = diff.pop()
-                logger.info("New device found! Mac address: {}".format(data['last']))
+                logger.info("New devices found: {}".format(diff))
             except KeyError:
                 pass
-        with open(DEVICES, 'w') as f:
             for device in online_devices:
                 data['visits'][device] = int(time.time())
+            f.seek(0)
             json.dump(data, f)
+            f.truncate()
     except json.JSONDecodeError:
         pass
 

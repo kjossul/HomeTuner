@@ -1,0 +1,11 @@
+.slider-handle {
+    background: red;
+}
+
+.slider-selection {
+	background: #FF8282;
+}
+
+.slider {
+    width: 100% !important;
+}

@@ -2,19 +2,14 @@
 
 {% block center %}
     <div class="col-xs-11 col-md-8 center-block" style="float: none">
-        <form method="post">
+        <form>
             <div class="input-group">
                 <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit" id="searchBtn">Search YouTube</button>
+                    <button class="btn btn-default" type="button" id="searchBtn">Search YouTube</button>
                 </span>
             </div>
         </form>
     </div>
     <div class="row center-block" style="float: none; margin-top: 25px" id="search-result"></div>
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='hometuner-0.0.1.js') }}"></script>
 {% endblock %}

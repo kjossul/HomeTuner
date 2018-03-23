@@ -17,17 +17,17 @@ def render_settings():
     with open(SONGS) as f:
         data = json.load(f)
     return render_template('settings.html', name=data['devices'][mac]['name'], songs=data['devices'][mac]['songs'],
-                           playing_order=data['devices'][mac]['playingOrder'])
+                           playing_order=data['devices'][mac]['playingOrder'], mac=mac)
 
 
-@settings.route('/settings', methods=['POST'])
-def update_preferences():
-    with open(SONGS) as f:
+@settings.route('/settings/<mac>', methods=['POST'])
+def update_preferences(mac):
+    with open(SONGS, 'r+') as f:
         data = json.load(f)
-    mac = get_guest_mac()
-    data['devices'][mac]['name'] = request.form['name']
-    data['devices'][mac]['playingOrder'] = request.form['playingOrder']
-    with open(SONGS, 'w') as f:
+        data['devices'][mac]['name'] = request.form['name']
+        data['devices'][mac]['playingOrder'] = request.form['playingOrder']
+        f.seek(0)
         json.dump(data, f)
+        f.truncate()
         logger.info("Updated {}'s preferences.".format(data['devices'][mac]['name']))
     return render_settings()
