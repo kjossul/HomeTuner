@@ -1,9 +1,11 @@
 import threading
-from HomeTuner import setup_logging, scan, init_assets, create_app
+from HomeTuner import setup_logging, scan, init_assets, create_app, control
 
 setup_logging()
 init_assets()
 scanner = threading.Thread(target=scan.main, args=[])
 scanner.start()
+controller = threading.Thread(target=control.main, args=[])
+controller.start()
 app = create_app()
 app.run(host='0.0.0.0', threaded=True)

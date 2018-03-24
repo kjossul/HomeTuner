@@ -6,7 +6,7 @@ class TestCase(unittest.TestCase):
 
     def setUpClass(cls):
         download.SONGS_DIR = "tests/Music"
-        download.SONGS = "tests/songs.json"
+        download.SONGS = "tests/data.json"
 
     def setUp(self):
         app = create_app()

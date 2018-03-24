@@ -2,11 +2,12 @@ import json
 import logging
 import logging.config
 import os
-
+from shutil import copyfile
+import time
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from HomeTuner.download import downloader
-from config import DIRECTORY, DEVICES, SONGS, SONGS_DIR, DUMMY_MAC
+from config import USER_DIR, DATA_FILE, SONGS_DIR, DUMMY_MAC, DEFAULT_SONG
 from HomeTuner.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -32,19 +33,20 @@ def setup_logging(path='logging.json', default_level=logging.INFO, env_key='LOG_
 
 
 def init_assets():
-    data = {'visits': {}, 'last': ""}
     if os.path.exists(SONGS_DIR):
         return
     else:
         os.makedirs(SONGS_DIR)
-    with open(DEVICES, 'w+') as f:
-        logger.info("Generating data file")
+    with open(DATA_FILE, 'w+') as f:
+        data = {'songs': {},
+                'devices': {DUMMY_MAC: {"name": "admin",
+                                        "songs": {},
+                                        "last_visit": int(time.time()),
+                                        "playingOrder": "random"}}}
         json.dump(data, f)
-    with open(SONGS, 'w+') as f:
-        logger.info("Generating song info file")
-        json.dump({'songs': {}, 'devices': {DUMMY_MAC: {"name": "admin", "songs": {}, "playingOrder": "random"}}}, f)
-
-
+        logger.info("Generated data file.")
+        copyfile(DEFAULT_SONG, os.path.join(SONGS_DIR, DEFAULT_SONG))
+        logger.info("Copied default song to user directory.")
 
 def create_app(config='config'):
     app = Flask(__name__)

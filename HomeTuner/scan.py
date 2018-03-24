@@ -3,7 +3,8 @@ import logging
 import time
 import re
 import subprocess
-from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS, DEVICES, SONGS
+from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS
+from HomeTuner.util import file_handler
 
 logger = logging.getLogger(__name__)
 
@@ -25,33 +26,27 @@ def save_newest_device(online_devices=None):
     """
     if online_devices is None:
         online_devices = get_mac_addresses()
+    data = file_handler.read_data_file()
+    diff = set(online_devices) - set(data['devices'].keys())
+    if diff:
+        for device in diff:
+            data['devices'][device] = {'name': device,
+                                       'songs': {},
+                                       'playingOrder': 'random',
+                                       'last_visit': 0,
+                                       'next_song': 'default_song.mp3'}
+        logger.info("New devices added to file: {}".format(diff))
+    last_seen = set(
+        [device for device, v in data['devices'].items() if v['last_visit'] + LAST_SEEN_INTERVAL > time.time()])
+    diff = set(online_devices) - last_seen
     try:
-        with open(SONGS) as f:
-            data = json.load(f)
-        diff = set(online_devices) - set(data['devices'].keys())
-        if diff:
-            logger.info("Adding devices to songs file..")
-            for device in diff:
-                data['devices'][device] = {'name': device, 'songs': {}, 'playingOrder': 'random'}
-            with open(SONGS, 'w') as f:
-                json.dump(data, f)
-        with open(DEVICES, 'r+') as f:
-            data = json.load(f)
-            last_seen = set(
-                [device for device, visit in data['visits'].items() if visit + LAST_SEEN_INTERVAL > time.time()])
-            diff = set(online_devices) - last_seen
-            try:
-                data['last'] = diff.pop()
-                logger.info("New devices found: {}".format(diff))
-            except KeyError:
-                pass
-            for device in online_devices:
-                data['visits'][device] = int(time.time())
-            f.seek(0)
-            json.dump(data, f)
-            f.truncate()
-    except json.JSONDecodeError:
+        data['last_device'] = diff.pop()
+        logger.info("Reconnected devices: {}.".format(diff | {data['last_device']}))
+    except KeyError:
         pass
+    for device in online_devices:
+        data['devices'][device]['last_visit'] = int(time.time())
+    file_handler.write_data_file(data)
 
 
 def main():

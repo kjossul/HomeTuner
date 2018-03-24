@@ -1,5 +1,7 @@
 flask
 flask-bootstrap
 google-api-python-client
+GPIOEmu
+mutagen
 pygame
 youtube-dl
