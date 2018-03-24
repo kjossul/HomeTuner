@@ -41,11 +41,11 @@ def init_assets():
         data = {'songs': {},
                 'devices': {DUMMY_MAC: {"name": "admin",
                                         "songs": {},
-                                        "last_visit": int(time.time()),
+                                        "lastVisit": int(time.time()),
                                         "playingOrder": "random"}}}
         json.dump(data, f)
         logger.info("Generated data file.")
-        copyfile(DEFAULT_SONG, os.path.join(SONGS_DIR, DEFAULT_SONG))
+        copyfile(DEFAULT_SONG+".mp3", os.path.join(SONGS_DIR, DEFAULT_SONG+".mp3"))
         logger.info("Copied default song to user directory.")
 
 def create_app(config='config'):

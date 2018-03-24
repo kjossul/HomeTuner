@@ -2,6 +2,5 @@ flask
 flask-bootstrap
 google-api-python-client
 GPIOEmu
-mutagen
-pygame
+python-vlc
 youtube-dl

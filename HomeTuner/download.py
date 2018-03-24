@@ -9,7 +9,7 @@ from flask import Flask, Blueprint, render_template, request, jsonify, abort
 from urllib.parse import unquote_plus
 from googleapiclient.discovery import build
 from HomeTuner.scan import get_mac_addresses
-from config import SONGS_DIR, DUMMY_MAC, API_KEY, SEARCH_RESULT_LIMIT
+from config import SONGS_DIR, DUMMY_MAC, API_KEY, SEARCH_RESULT_LIMIT, DEFAULT_SONG
 from HomeTuner.util import file_handler
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,7 @@ def update_song(mac, song_id):
     mac = unquote_plus(mac)
     data = file_handler.read_data_file()
     data['devices'][mac]['songs'][song_id] = int(post_data['start'])
+    data['lastDevice'] = mac
     file_handler.write_data_file(data)
     logger.info(
         "Updated song {} for user {} to start at {}".format(song_id, data['devices'][mac]['name'], post_data['start']))
@@ -90,7 +91,8 @@ def put_song(mac, song_id):
                 }
     data = file_handler.read_data_file()
     data['devices'][mac]['songs'][song_id] = 0  # initially sets song start time to 0
-    data['devices'][mac]['next_song'] = song_id
+    data['devices'][mac]['nextSong'] = song_id
+    data['lastDevice'] = mac
     download = True
     if song_id in data['songs'] and data['songs'][song_id]['progress'] == 100:
         logger.info("Song already downloaded. Adding to user rotation..")
@@ -111,6 +113,10 @@ def remove_song(mac, song_id):
     mac = unquote_plus(mac)
     data = file_handler.read_data_file()
     del data['devices'][mac]['songs'][song_id]
+    try:
+        data['devices'][mac]['nextSong'] = list(data['devices'][mac]['songs'].keys())[0]
+    except IndexError:
+        data['devices'][mac]['nextSong'] = DEFAULT_SONG
     data['songs'][song_id]['savedBy'] = list(set(data['songs'][song_id]['savedBy']) - {mac})
     residual = data['songs'][song_id]['savedBy']
     if not residual:

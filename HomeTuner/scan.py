@@ -33,19 +33,19 @@ def save_newest_device(online_devices=None):
             data['devices'][device] = {'name': device,
                                        'songs': {},
                                        'playingOrder': 'random',
-                                       'last_visit': 0,
-                                       'next_song': 'default_song.mp3'}
+                                       'lastVisit': 0,
+                                       'nextSong': 'default_song'}
         logger.info("New devices added to file: {}".format(diff))
     last_seen = set(
-        [device for device, v in data['devices'].items() if v['last_visit'] + LAST_SEEN_INTERVAL > time.time()])
+        [device for device, v in data['devices'].items() if v['lastVisit'] + LAST_SEEN_INTERVAL > time.time()])
     diff = set(online_devices) - last_seen
     try:
-        data['last_device'] = diff.pop()
-        logger.info("Reconnected devices: {}.".format(diff | {data['last_device']}))
+        data['lastDevice'] = diff.pop()
+        logger.info("Reconnected devices: {}.".format(diff | {data['lastDevice']}))
     except KeyError:
         pass
     for device in online_devices:
-        data['devices'][device]['last_visit'] = int(time.time())
+        data['devices'][device]['lastVisit'] = int(time.time())
     file_handler.write_data_file(data)
 
 
