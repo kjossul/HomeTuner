@@ -27,7 +27,6 @@ API_KEY = get_api_key()
 SEARCH_RESULT_LIMIT = 5
 # RaspberryPi configuration
 LED = 7
-NEXT_SONG_BUTTON = 11
 STOP_BUTTON = 13
 REED_SWITCH = 15
 BLINK_DELAY = 0.2  # seconds delay between each blink when activating or deactivating pi

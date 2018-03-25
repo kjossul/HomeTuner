@@ -1,9 +1,11 @@
 import logging
 import random
 import os
+import threading
+
 import vlc
 import time
-from config import LED, NEXT_SONG_BUTTON, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, \
+from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, \
     SONGS_DIR, DEFAULT_SONG
 from HomeTuner.util import file_handler
 
@@ -18,18 +20,17 @@ logger = logging.getLogger(__name__)
 class Circuit:
     def __init__(self):
         self.active = False
+        self.playing = False
         self.disable_buttons = False
         self.stop_button_press_time = 0
         self.player = None
         # GPIO init
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(LED, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup(NEXT_SONG_BUTTON, GPIO.IN)
         GPIO.setup(STOP_BUTTON, GPIO.IN)
         GPIO.setup(REED_SWITCH, GPIO.IN)
-        GPIO.add_event_detect(NEXT_SONG_BUTTON, GPIO.RISING, callback=self.play_music)
         GPIO.add_event_detect(STOP_BUTTON, GPIO.BOTH, callback=self.handle_stop_button)
-        GPIO.add_event_detect(REED_SWITCH, GPIO.FALLING, callback=self.play_music)
+        GPIO.add_event_detect(REED_SWITCH, GPIO.RISING, callback=self.play_music)
         # activate
         self.toggle_activation()
 
@@ -58,9 +59,23 @@ class Circuit:
         self.player.play()
         self.player.set_time(start * 1000)
         logger.info("Started playing song {}.".format(song))
+        # LED blink
+        self.playing = True
+
+        def play_until_music_stops(circuit):
+            counter = 0
+            while circuit.playing:
+                circuit.switch_led_off() if counter % 2 == 0 else circuit.light_led_up()
+                counter += 1
+                time.sleep(BLINK_DELAY)
+            circuit.light_led_up()
+
+        t = threading.Thread(target=play_until_music_stops, args=[self])
+        t.start()
 
     def stop_music(self):
         self.stop_button_press_time = time.time()
+        self.playing = False
         try:
             self.player.stop()
             logger.info("Music stopped.")
