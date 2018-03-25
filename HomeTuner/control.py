@@ -55,7 +55,6 @@ class Circuit:
             time.sleep(BLINK_DELAY)
 
     def play_music(self, channel=None, song=None, start=None):
-        logger.info("Channel {} is {}".format(channel, GPIO.input(channel)))
         time.sleep(SWITCH_CHECK_INTERVAL)
         if not self.active or not GPIO.input(REED_SWITCH):
             # return if the switch is not closed, avoids random current spikes to be picked up by this function
@@ -107,7 +106,6 @@ class Circuit:
         return os.path.join(SONGS_DIR, "{}.mp3".format(now_playing)), start
 
     def handle_stop_button(self, channel=None):
-        logger.info("Channel {} is {}".format(channel, GPIO.input(channel)))
         if GPIO.input(STOP_BUTTON):
             self.stop_music()
         else:
