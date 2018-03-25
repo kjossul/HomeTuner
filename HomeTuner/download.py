@@ -1,34 +1,24 @@
-import json
 import logging
 
 import os
 from re import findall
 
 import youtube_dl
-from flask import Flask, Blueprint, render_template, request, jsonify, abort
+from flask import Blueprint, render_template, request, jsonify
 from urllib.parse import unquote_plus
 from googleapiclient.discovery import build
-from HomeTuner.scan import get_mac_addresses
-from config import SONGS_DIR, DUMMY_MAC, API_KEY, SEARCH_RESULT_LIMIT, DEFAULT_SONG
+from config import SONGS_DIR, API_KEY, SEARCH_RESULT_LIMIT, DEFAULT_SONG
 from HomeTuner.util import file_handler
+from HomeTuner.util import get_guest_name, get_guest_mac
 
 logger = logging.getLogger(__name__)
 # Flask
-app = Flask(__name__)
 downloader = Blueprint('downloader', __name__)
 
 
 @downloader.route('/')
 def home():
-    return render_template('home.html', name=get_guest_name())
-
-
-def get_guest_mac():
-    try:
-        mac = get_mac_addresses(hosts=request.remote_addr)[0]
-    except IndexError:
-        mac = DUMMY_MAC
-    return mac
+    return render_template('home.html', name=get_guest_name()), "HTTP/1.1 200 OK", {"Content-Type": "text/html"}
 
 
 @downloader.route('/search')
@@ -167,12 +157,6 @@ def get_videos_duration(videos):
     return [{'id': result['id'],
              'duration': iso8601_duration_as_seconds(result['contentDetails']['duration'])}
             for result in videos_response.get('items', [])]
-
-
-def get_guest_name():
-    mac = get_guest_mac()
-    data = file_handler.read_data_file()
-    return data['devices'][mac]['name']
 
 
 def iso8601_duration_as_seconds(d):

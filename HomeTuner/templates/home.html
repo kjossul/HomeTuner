@@ -2,14 +2,12 @@
 
 {% block center %}
     <div class="col-xs-11 col-md-8 center-block" style="float: none">
-        <form>
-            <div class="input-group">
-                <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="searchBtn">Search YouTube</button>
-                </span>
-            </div>
-        </form>
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchKey" placeholder="Search for...">
+            <span class="input-group-btn">
+                <button class="btn btn-default" type="button" id="searchBtn">Search YouTube</button>
+            </span>
+        </div>
     </div>
     <div class="row center-block" style="float: none; margin-top: 25px" id="search-result"></div>
 {% endblock %}

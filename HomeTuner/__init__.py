@@ -7,8 +7,9 @@ import time
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from HomeTuner.download import downloader
-from config import USER_DIR, DATA_FILE, SONGS_DIR, DUMMY_MAC, DEFAULT_SONG
+from config import SILENT_SONG, DATA_FILE, SONGS_DIR, DUMMY_MAC, DEFAULT_SONG
 from HomeTuner.settings import settings
+from HomeTuner.control import player
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,10 @@ def init_assets():
                                         "playingOrder": "random"}}}
         json.dump(data, f)
         logger.info("Generated data file.")
-        copyfile(DEFAULT_SONG+".mp3", os.path.join(SONGS_DIR, DEFAULT_SONG+".mp3"))
-        logger.info("Copied default song to user directory.")
+        copyfile(DEFAULT_SONG + ".mp3", os.path.join(SONGS_DIR, DEFAULT_SONG + ".mp3"))
+        copyfile(SILENT_SONG, os.path.join(SONGS_DIR, SILENT_SONG))
+        logger.info("Copied default song and silent song to user directory.")
+
 
 def create_app(config='config'):
     app = Flask(__name__)
@@ -54,4 +57,5 @@ def create_app(config='config'):
     Bootstrap(app)
     app.register_blueprint(downloader)
     app.register_blueprint(settings)
+    app.register_blueprint(player)
     return app

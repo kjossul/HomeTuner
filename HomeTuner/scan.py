@@ -1,23 +1,11 @@
-import json
 import logging
 import time
-import re
-import subprocess
-from config import INTERFACE, LAST_SEEN_INTERVAL, SLEEP_SECONDS
+from config import LAST_SEEN_INTERVAL, SLEEP_SECONDS, REED_SWITCH, SILENT_SONG, KEEP_ALIVE_INTERVAL
 from HomeTuner.util import file_handler
+from HomeTuner.control import circuit
+from HomeTuner.util import get_mac_addresses
 
 logger = logging.getLogger(__name__)
-
-
-def get_hosts():
-    return " ".join("192.168.1.{}".format(i) for i in range(200, 255))
-
-
-def get_mac_addresses(hosts=get_hosts()):
-    p = subprocess.Popen("arp-scan --interface={} {} -q -g".format(INTERFACE, hosts), shell=True,
-                         stdout=subprocess.PIPE)
-    arp_scan, err = p.communicate()
-    return re.findall('(?:[0-9a-fA-F]:?){12}', str(arp_scan))
 
 
 def save_newest_device(online_devices=None):
@@ -49,9 +37,16 @@ def save_newest_device(online_devices=None):
     file_handler.write_data_file(data)
 
 
+def keep_speakers_alive(counter):
+    if KEEP_ALIVE_INTERVAL and counter % KEEP_ALIVE_INTERVAL == 0:
+        circuit.play_music(channel=REED_SWITCH, song=SILENT_SONG, start=0)
+
+
 def main():
     logger.info("Launching scanner. Set to perform arp-scans every {} second(s)".format(SLEEP_SECONDS))
+    counter = 0
     while True:
+        counter += 1
         save_newest_device()
         time.sleep(SLEEP_SECONDS)
 

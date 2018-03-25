@@ -3,10 +3,8 @@ import logging
 
 from flask import Flask, Blueprint, render_template, request
 
-from HomeTuner.util import file_handler
-from HomeTuner.download import get_guest_mac
+from HomeTuner.util import file_handler, get_guest_mac
 
-app = Flask(__name__)
 settings = Blueprint('settings', __name__)
 logger = logging.getLogger(__name__)
 

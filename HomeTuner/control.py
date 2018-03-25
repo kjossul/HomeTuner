@@ -2,12 +2,15 @@ import logging
 import random
 import os
 import threading
-
 import vlc
 import time
-from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, \
-    SONGS_DIR, DEFAULT_SONG
+
+from flask import Blueprint, jsonify, render_template, request
+
+from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, SONGS_DIR, DEFAULT_SONG, \
+    SWITCH_CHECK_INTERVAL, EXIT_HOUSE_TIMER
 from HomeTuner.util import file_handler
+from HomeTuner.util import get_guest_name
 
 try:
     import RPi.GPIO as GPIO
@@ -15,6 +18,7 @@ except ImportError:
     import GPIOEmu as GPIO
 
 logger = logging.getLogger(__name__)
+player = Blueprint("player", __name__)
 
 
 class Circuit:
@@ -50,11 +54,15 @@ class Circuit:
             self.active = not self.active
             time.sleep(BLINK_DELAY)
 
-    def play_music(self, channel=None):
-        if not self.active:
+    def play_music(self, channel=None, song=None, start=None):
+        logger.info("Channel {} is {}".format(channel, GPIO.input(channel)))
+        time.sleep(SWITCH_CHECK_INTERVAL)
+        if not self.active or not GPIO.input(REED_SWITCH):
+            # return if the switch is not closed, avoids random current spikes to be picked up by this function
             return
         self.stop_music()
-        song, start = self.update_song_queue()
+        if not song or not start:
+            song, start = self.update_song_queue()
         self.player = vlc.MediaPlayer(song)
         self.player.play()
         self.player.set_time(start * 1000)
@@ -75,10 +83,11 @@ class Circuit:
 
     def stop_music(self):
         self.stop_button_press_time = time.time()
+        if self.playing:
+            logger.info("Stopping music.")
         self.playing = False
         try:
             self.player.stop()
-            logger.info("Music stopped.")
         except Exception:
             pass
 
@@ -98,14 +107,41 @@ class Circuit:
         return os.path.join(SONGS_DIR, "{}.mp3".format(now_playing)), start
 
     def handle_stop_button(self, channel=None):
+        logger.info("Channel {} is {}".format(channel, GPIO.input(channel)))
         if GPIO.input(STOP_BUTTON):
             self.stop_music()
         else:
             self.toggle_activation()
 
 
+circuit = Circuit()
+
+
+@player.route("/suspend")
+def suspend_circuit():
+    """
+    Suspends the circuits for some seconds, allowing the user to exit the house without playing the song.
+    """
+    circuit.active = False
+
+    def blink_exit():
+        for i in range(EXIT_HOUSE_TIMER * 2):
+            circuit.switch_led_off() if i % 2 == 0 else circuit.light_led_up()
+            time.sleep(0.5)
+        circuit.active = True
+
+    t = threading.Thread(target=blink_exit)
+    t.start()
+    return render_template("suspend.html", seconds=EXIT_HOUSE_TIMER, name=get_guest_name())
+
+
+@player.route('/play')
+def play_song():
+    data = request.get_json()
+
+
 def main():
-    Circuit()
+    pass
 
 
 if __name__ == '__main__':

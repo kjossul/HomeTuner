@@ -2,7 +2,7 @@
 {% block title %}HomeTuner{% endblock %}
 
 {% block navbar %}
-    <nav class="navbar navbar-default">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="navbar-header">
@@ -18,7 +18,7 @@
                 {% if name.count(':') > 4 %}
                     <p class="navbar-right navbar-text"><u><a href="/settings">Set your name here!</a></u></p>
                 {% else %}
-                    <p class="navbar-right navbar-text">Hello, {{ name }}!</p>
+                    <p class="navbar-right navbar-text">Signed in as {{ name }}.</p>
                 {% endif %}
             </div>
 
@@ -33,6 +33,11 @@
                     <li{% if request.path == "/settings" %} class="active"{% endif %}>
                         <a href="/settings" class="btn">
                             <span class="glyphicon glyphicon-wrench"></span> Settings
+                        </a>
+                    </li>
+                    <li{% if request.path == "/suspend" %} class="active"{% endif %}>
+                        <a href="/suspend" class="btn">
+                            <span class="glyphicon glyphicon-log-out"></span> Exit house
                         </a>
                     </li>
                 </ul>

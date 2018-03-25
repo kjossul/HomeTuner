@@ -50,7 +50,7 @@ function updateBarRow(barRow, video, mac) {
 
 function updateProgressBar(barRow, button, mac, video) {
     const UPDATE_INTERVAL = 666;
-    const BARROW_UPDATE_DELAY = 2000;
+    const BAR_UPDATE_DELAY = 10000;
     barRow.style.display = "block";
     var t = setInterval(function () {
         var progressRequest = new XMLHttpRequest();
@@ -70,11 +70,10 @@ function updateProgressBar(barRow, button, mac, video) {
             progressBar.style.width = progress + "%";
             if (progress === 100) {
                 clearInterval(t);
-                loadingText.innerHTML = "Success!";
-                progressBar.classList.remove("active");
+                loadingText.innerHTML = "Converting MP3";
                 setTimeout(function () {
                     invertButton(button, mac, video, barRow);
-                }, BARROW_UPDATE_DELAY);
+                }, BAR_UPDATE_DELAY);
             }
         };
         progressRequest.open("GET", progressUrl);

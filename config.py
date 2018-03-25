@@ -22,6 +22,7 @@ USER_DIR = os.path.expanduser('~/Documents/HomeTuner')
 SONGS_DIR = os.path.join(USER_DIR, 'Music')
 DATA_FILE = os.path.join(USER_DIR, "data.json")
 DEFAULT_SONG = "default_song"
+SILENT_SONG = "silent_song.mp3"  # Yes, this one has the extension and the other one does not. Don't ask why.
 # YouTube API
 API_KEY = get_api_key()
 SEARCH_RESULT_LIMIT = 5
@@ -29,6 +30,12 @@ SEARCH_RESULT_LIMIT = 5
 LED = 7
 STOP_BUTTON = 13
 REED_SWITCH = 15
+# Time constants
+SWITCH_CHECK_INTERVAL = 0.2  # Time to wait before checking again if the switch is properly open
 BLINK_DELAY = 0.2  # seconds delay between each blink when activating or deactivating pi
 BLINK_TIMES = 3  # amount of times the led blinks when the circuit is activated
-LONG_PRESS_TIME = 2  # amount of seconds the stop button needs to be pressed to toggle activation
+LONG_PRESS_TIME = 1  # amount of seconds the stop button needs to be pressed to toggle activation
+EXIT_HOUSE_TIMER = 10  # amount of seconds the user has to exit the house before the circuit activates again
+# My speakers need to be kept alive because they turn off themselves if nothing is played for a while. Set this to
+# None if you don't need this
+KEEP_ALIVE_INTERVAL = 1 / SLEEP_SECONDS * 60 * 25

@@ -9,3 +9,7 @@
 .slider {
     width: 100% !important;
 }
+
+body {
+    padding-top: 100px;
+}
