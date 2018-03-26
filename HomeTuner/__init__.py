@@ -46,8 +46,8 @@ def init_assets():
                                         "playingOrder": "random"}}}
         json.dump(data, f)
         logger.info("Generated data file.")
-        copyfile(DEFAULT_SONG + ".mp3", os.path.join(SONGS_DIR, DEFAULT_SONG + ".mp3"))
-        copyfile(SILENT_SONG, os.path.join(SONGS_DIR, SILENT_SONG))
+        copyfile(DEFAULT_SONG + ".mp3", os.path.join(SONGS_DIR, "default_song.mp3"))
+        copyfile(SILENT_SONG, os.path.join(SONGS_DIR, "silent.mp3"))
         logger.info("Copied default song and silent song to user directory.")
 
 

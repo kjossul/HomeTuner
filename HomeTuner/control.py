@@ -8,7 +8,7 @@ import time
 from flask import Blueprint, jsonify, render_template, request
 
 from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, SONGS_DIR, DEFAULT_SONG, \
-    INPUT_CHECK_INTERVAL, EXIT_HOUSE_TIMER
+    INPUT_CHECK_INTERVAL, EXIT_HOUSE_TIMER, INPUT_CHECK_TIMES
 from HomeTuner.util import file_handler
 from HomeTuner.util import get_guest_name
 
@@ -108,10 +108,11 @@ class Circuit:
 
     def check_input_before_callback(self, channel):
         value = GPIO.input(channel)
-        time.sleep(INPUT_CHECK_INTERVAL)
-        if not self.active or value != GPIO.input(channel):
-            # my pi detects random current spikes that trigger music randomly, just checking input twice here
-            return
+        for _ in range(INPUT_CHECK_TIMES):
+            time.sleep(INPUT_CHECK_INTERVAL)
+            if not self.active or value != GPIO.input(channel):
+                # my pi detects random current spikes that trigger music randomly, just checking input twice here
+                return
         else:
             self.callbacks[channel]()
 
