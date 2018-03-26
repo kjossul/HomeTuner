@@ -37,16 +37,21 @@ def save_newest_device(online_devices=None):
     file_handler.write_data_file(data)
 
 
-def keep_speakers_alive(counter):
-    if KEEP_ALIVE_INTERVAL and counter % KEEP_ALIVE_INTERVAL == 0:
-        circuit.play_music(channel=REED_SWITCH, song=SILENT_SONG, start=0)
-
-
 def main():
     logger.info("Launching scanner. Set to perform arp-scans every {} second(s)".format(SLEEP_SECONDS))
-    counter = 0
+    if KEEP_ALIVE_INTERVAL:
+        logger.info("Keeping speakers alive by playing silent mp3 every {} minute(s)"
+                    .format(KEEP_ALIVE_INTERVAL * SLEEP_SECONDS / 60))
+        counter = 0
     while True:
-        counter += 1
+        if KEEP_ALIVE_INTERVAL:
+            counter += 1
+            counter %= KEEP_ALIVE_INTERVAL
+            if counter == 0:
+                circuit.play_music(song=SILENT_SONG, start=0)
+            elif counter == 1:
+                circuit.stop_music()
+
         save_newest_device()
         time.sleep(SLEEP_SECONDS)
 
