@@ -6,13 +6,6 @@ BOOTSTRAP_SERVE_LOCAL = True
 # HomeTuner
 import os
 
-
-def get_api_key():
-    with open(".apikey") as f:
-        api_key = f.read()
-    return api_key
-
-
 INTERFACE = "eno1"  # interface scanned by arp-scan
 LAST_SEEN_INTERVAL = 300  # device is considered online if last connection was at most this amount of seconds ago
 SLEEP_SECONDS = 1  # seconds between each arp-scan
@@ -24,7 +17,7 @@ DATA_FILE = os.path.join(USER_DIR, "data.json")
 DEFAULT_SONG = "default_song"
 SILENT_SONG = "silent.mp3"  # Yes, this one has the extension and the other one does not. Don't ask why.
 # YouTube API
-API_KEY = get_api_key()
+API_KEY = "YOUR API KEY HERE"
 SEARCH_RESULT_LIMIT = 5
 # RaspberryPi configuration
 LED = 7
