@@ -49,6 +49,8 @@ class Circuit:
         GPIO.output(LED, GPIO.LOW)
 
     def play_music(self, song=None, start=None):
+        if self.playing:
+            return # avoids multiple triggering
         self.stop_music()
         if not song or start is None:
             song, start = self.update_song_queue()
@@ -93,24 +95,26 @@ class Circuit:
             data['devices'][last_device]['nextSong'] = DEFAULT_SONG
         return os.path.join(SONGS_DIR, "{}.mp3".format(now_playing)), start
 
-    def suspend(self):
+    def suspend(self, suspend_time=EXIT_HOUSE_TIMER):
         self.active = False
 
         def blink_exit():
-            for i in range(EXIT_HOUSE_TIMER * 2):
+            for i in range(suspend_time * 2):
                 self.switch_led_off() if i % 2 == 1 else self.light_led_up()
                 time.sleep(0.5)
             self.active = True
 
         t = threading.Thread(target=blink_exit)
         t.start()
-        logger.info("Circuit is disabled for {} seconds".format(EXIT_HOUSE_TIMER))
+        logger.info("Circuit is disabled for {} seconds".format(suspend_time))
 
     def check_input_before_callback(self, channel):
+        if not self.active:
+            return
         value = GPIO.input(channel)
         for _ in range(INPUT_CHECK_TIMES):
             time.sleep(INPUT_CHECK_INTERVAL)
-            if not self.active or value != GPIO.input(channel):
+            if value != GPIO.input(channel):
                 # my pi detects random current spikes that trigger music randomly, just checking input twice here
                 return
         else:
@@ -119,6 +123,7 @@ class Circuit:
     def handle_stop_button(self):
         if GPIO.input(STOP_BUTTON):
             self.stop_music()
+            self.suspend(suspend_time=2)
         else:
             if self.stop_button_press_time + LONG_PRESS_TIME > time.time():
                 return  # button hasn't been pressed long enough
