@@ -68,7 +68,7 @@ env/
 .directory
 *.log
 *.json
-!/logging.json
+!/HomeTuner/logging.json
 HomeTuner/__init__.pyc
 HomeTuner/__pycache__/
 HomeTuner/assets/

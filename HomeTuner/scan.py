@@ -42,15 +42,14 @@ def main():
     if KEEP_ALIVE_INTERVAL:
         logger.info("Keeping speakers alive by playing silent mp3 every {} minute(s)"
                     .format(KEEP_ALIVE_INTERVAL * SLEEP_SECONDS / 60))
-        counter = 0
+    start = time.time()
     while True:
-        if KEEP_ALIVE_INTERVAL:
-            counter += 1
-            counter %= KEEP_ALIVE_INTERVAL
-            if counter == 0:
-                circuit.play_music(song=SILENT_SONG, start=0)
-            elif counter == 1:
-                circuit.stop_music()
+        if KEEP_ALIVE_INTERVAL and time.time() - start >= KEEP_ALIVE_INTERVAL and not circuit.playing:
+            circuit.play_music(song=SILENT_SONG, start=0)
+            time.sleep(1)
+            circuit.stop_music()
+            start = time.time()
+
 
         save_newest_device()
         time.sleep(SLEEP_SECONDS)

@@ -10,11 +10,12 @@ from HomeTuner.download import downloader
 from config import SILENT_SONG, DATA_FILE, SONGS_DIR, DUMMY_MAC, DEFAULT_SONG
 from HomeTuner.settings import settings
 from HomeTuner.control import player
+from pkg_resources import resource_filename
 
 logger = logging.getLogger(__name__)
 
 
-def setup_logging(path='logging.json', default_level=logging.INFO, env_key='LOG_CFG', tofile=True):
+def setup_logging(path=resource_filename("HomeTuner", "logging.json"), default_level=logging.INFO, env_key='LOG_CFG', tofile=True):
     """
     Setup logging configuration
     """
@@ -28,6 +29,11 @@ def setup_logging(path='logging.json', default_level=logging.INFO, env_key='LOG_
             if not tofile:
                 config['root']['handlers'] = ['console']  # keeps only console
                 config['handlers'] = {'console': config['handlers']['console']}
+            else:
+                config['handlers']['info_file_handler']['filename']\
+                    = os.path.join(os.path.dirname(__file__), config['handlers']['info_file_handler']['filename'])
+                config['handlers']['error_file_handler']['filename']\
+                    = os.path.join(os.path.dirname(__file__), config['handlers']['error_file_handler']['filename'])
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
