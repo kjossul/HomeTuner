@@ -45,7 +45,7 @@ def main():
     start = time.time()
     while True:
         if KEEP_ALIVE_INTERVAL and time.time() - start >= KEEP_ALIVE_INTERVAL and not circuit.playing:
-            circuit.play_music(song=SILENT_SONG, start=0)
+            circuit.play_music(song=SILENT_SONG, start=0, quiet=True)
             time.sleep(1)
             circuit.stop_music()
             start = time.time()

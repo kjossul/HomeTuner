@@ -48,13 +48,15 @@ class Circuit:
     def switch_led_off():
         GPIO.output(LED, GPIO.LOW)
 
-    def play_music(self, song=None, start=None):
+    def play_music(self, song=None, start=None, quiet=False):
         if self.playing:
             return # avoids multiple triggering
         self.stop_music()
         if not song or start is None:
             song, start = self.update_song_queue()
         self.player = vlc.MediaPlayer(song)
+        if quiet:
+            self.player.audio_set_volume(10)
         self.player.play()
         self.player.set_time(start * 1000)
         logger.info("Started playing song {}.".format(song))
