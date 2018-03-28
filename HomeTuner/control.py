@@ -57,11 +57,13 @@ class Circuit:
         self.player = vlc.MediaPlayer(song)
         if quiet:
             self.player.audio_set_volume(10)
+            self.playing = False
+        else:
+            self.playing = True
         self.player.play()
         self.player.set_time(start * 1000)
         logger.info("Started playing song {}.".format(song))
         # LED blink
-        self.playing = True
 
         def play_until_music_stops(circuit):
             counter = 0
@@ -73,6 +75,9 @@ class Circuit:
 
         t = threading.Thread(target=play_until_music_stops, args=[self])
         t.start()
+        if quiet:
+            time.sleep(10)
+            self.player.stop()
 
     def stop_music(self):
         self.stop_button_press_time = time.time()

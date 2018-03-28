@@ -1,6 +1,9 @@
 {% extends "bootstrap/base.html" %}
 {% block title %}HomeTuner{% endblock %}
-
+{% block head %}
+    {{ super() }}
+    <link rel="icon" type="image/ico" href="/static/images/favicon.ico">
+{% endblock %}
 {% block navbar %}
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
