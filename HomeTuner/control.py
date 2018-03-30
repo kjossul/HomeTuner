@@ -5,10 +5,10 @@ import threading
 import vlc
 import time
 
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, render_template
 
-from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, BLINK_TIMES, LONG_PRESS_TIME, SONGS_DIR, DEFAULT_SONG, \
-    INPUT_CHECK_INTERVAL, EXIT_HOUSE_TIMER, INPUT_CHECK_TIMES
+from config import LED, STOP_BUTTON, REED_SWITCH, BLINK_DELAY, LONG_PRESS_TIME, SONGS_DIR, DEFAULT_SONG, \
+    INPUT_CHECK_INTERVAL, EXIT_HOUSE_TIMER
 from HomeTuner.util import file_handler
 from HomeTuner.util import get_guest_name
 
@@ -36,8 +36,8 @@ class Circuit:
         GPIO.setup(LED, GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(STOP_BUTTON, GPIO.IN)
         GPIO.setup(REED_SWITCH, GPIO.IN)
-        GPIO.add_event_detect(STOP_BUTTON, GPIO.BOTH, callback=self.check_input_before_callback)
-        GPIO.add_event_detect(REED_SWITCH, GPIO.RISING, callback=self.check_input_before_callback)
+        GPIO.add_event_detect(STOP_BUTTON, GPIO.BOTH, callback=self.check_input_before_callback, bouncetime=5)
+        GPIO.add_event_detect(REED_SWITCH, GPIO.RISING, callback=self.check_input_before_callback, bouncetime=5)
         self.switch_led_off()
 
     @staticmethod
@@ -49,7 +49,7 @@ class Circuit:
         GPIO.output(LED, GPIO.LOW)
 
     def play_music(self, song=None, start=None, quiet=False):
-        if self.playing:
+        if self.playing or not self.active:
             return # avoids multiple triggering
         self.stop_music()
         if not song or start is None:
@@ -116,21 +116,17 @@ class Circuit:
         logger.info("Circuit is disabled for {} seconds".format(suspend_time))
 
     def check_input_before_callback(self, channel):
-        if not self.active:
-            return
         value = GPIO.input(channel)
-        for _ in range(INPUT_CHECK_TIMES):
-            time.sleep(INPUT_CHECK_INTERVAL)
-            if value != GPIO.input(channel):
-                # my pi detects random current spikes that trigger music randomly, just checking input twice here
-                return
+        time.sleep(INPUT_CHECK_INTERVAL)
+        if value != GPIO.input(channel):
+            # my pi detects random current spikes that trigger music randomly, just checking input twice here
+            return
         else:
             self.callbacks[channel]()
 
     def handle_stop_button(self):
         if GPIO.input(STOP_BUTTON):
             self.stop_music()
-            self.suspend(suspend_time=2)
         else:
             if self.stop_button_press_time + LONG_PRESS_TIME > time.time():
                 return  # button hasn't been pressed long enough
