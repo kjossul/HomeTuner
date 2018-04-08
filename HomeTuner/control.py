@@ -131,7 +131,8 @@ class Circuit:
         if GPIO.input(STOP_BUTTON):
             self.stop_music()
         else:
-            if self.stop_button_press_time + LONG_PRESS_TIME > time.time():
+            diff = time.time() - self.stop_button_press_time
+            if diff < LONG_PRESS_TIME or diff > LONG_PRESS_TIME * 2:
                 return  # button hasn't been pressed long enough
             else:
                 self.suspend()
