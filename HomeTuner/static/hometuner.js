@@ -50,7 +50,7 @@ function updateBarRow(barRow, video, mac) {
 
 function updateProgressBar(barRow, button, mac, video) {
     const UPDATE_INTERVAL = 666;
-    const BAR_UPDATE_DELAY = 10000;
+    const BAR_UPDATE_DELAY = 6000;
     barRow.style.display = "block";
     var t = setInterval(function () {
         var progressRequest = new XMLHttpRequest();

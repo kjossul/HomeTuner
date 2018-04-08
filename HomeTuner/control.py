@@ -49,8 +49,9 @@ class Circuit:
         GPIO.output(LED, GPIO.LOW)
 
     def play_music(self, song=None, start=None, quiet=False):
-        if self.playing or not self.active:
-            return # avoids multiple triggering
+        time.sleep(0.5)
+        if self.playing or not self.active or not GPIO.input(REED_SWITCH):
+            return
         self.stop_music()
         if not song or start is None:
             song, start = self.update_song_queue()
@@ -59,6 +60,7 @@ class Circuit:
             self.player.audio_set_volume(10)
             self.playing = False
         else:
+            self.player.audio_set_volume(100)
             self.playing = True
         self.player.play()
         self.player.set_time(start * 1000)
@@ -67,11 +69,12 @@ class Circuit:
 
         def play_until_music_stops(circuit):
             counter = 0
-            while circuit.playing:
+            while circuit.playing and counter < (1 / BLINK_DELAY) * 60 * 3:  # after 3 minutes it stops music
                 circuit.switch_led_off() if counter % 2 == 1 else circuit.light_led_up()
                 counter += 1
                 time.sleep(BLINK_DELAY)
             circuit.switch_led_off()
+            self.stop_music()
 
         t = threading.Thread(target=play_until_music_stops, args=[self])
         t.start()
