@@ -100,9 +100,10 @@ class Circuit:
             if data['devices'][last_device]['playingOrder'] == 'random':
                 data['devices'][last_device]['nextSong'] = random.choice(songs)
             else:
-                data['devices'][last_device]['nextSong'] = (songs.index(now_playing) + 1) % len(songs)
+                data['devices'][last_device]['nextSong'] = songs[(songs.index(now_playing) + 1) % len(songs)]
         except IndexError:
             data['devices'][last_device]['nextSong'] = DEFAULT_SONG
+        file_handler.write_data_file(data)
         return os.path.join(SONGS_DIR, "{}.mp3".format(now_playing)), start
 
     def suspend(self, suspend_time=EXIT_HOUSE_TIMER):
